@@ -57,7 +57,7 @@
     [self.pieChartRight setPieCenter:CGPointMake(240, 240)];
     [self.pieChartRight setShowPercentage:NO];
     [self.pieChartRight setLabelColor:[UIColor blackColor]];
-    [self.pieChartRight setSliceOffsetRadius:3.0f];
+    [self.pieChartRight setSliceOffsetRadius:10.0f];
 
     [self.percentageLabel.layer setCornerRadius:90];
     
