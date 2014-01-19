@@ -37,6 +37,8 @@
 @property (nonatomic, assign) BOOL      isSelected;
 @property (nonatomic, strong) NSString  *text;
 - (void)createArcAnimationForKey:(NSString *)key fromValue:(NSNumber *)from toValue:(NSNumber *)to Delegate:(id)delegate;
+
+- (double)midAngle;
 @end
 
 @implementation SliceLayer
@@ -82,6 +84,10 @@
     [self addAnimation:arcAnimation forKey:key];
     [self setValue:to forKey:key];
 }
+
+- (double)midAngle {
+    return (self.startAngle + self.endAngle) / 2.0;
+}
 @end
 
 @interface XYPieChart (Private) 
@@ -119,6 +125,7 @@ static NSUInteger kDefaultSliceZOrder = 100;
 @synthesize selectedSliceStroke = _selectedSliceStroke;
 @synthesize selectedSliceOffsetRadius = _selectedSliceOffsetRadius;
 @synthesize showPercentage = _showPercentage;
+@synthesize sliceOffsetRadius= _sliceOffsetRadius;
 
 static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAngle, CGFloat endAngle) 
 {
@@ -154,6 +161,7 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
         _labelColor = [UIColor whiteColor];
         _labelRadius = _pieRadius/2;
         _selectedSliceOffsetRadius = MAX(10, _pieRadius/10);
+        _sliceOffsetRadius = 0.0;
         
         _showLabel = YES;
         _showPercentage = YES;
@@ -195,6 +203,7 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
         _labelColor = [UIColor whiteColor];
         _labelRadius = _pieRadius/2;
         _selectedSliceOffsetRadius = MAX(10, _pieRadius/10);
+        _sliceOffsetRadius = 0.0f;
         
         _showLabel = YES;
         _showPercentage = YES;
@@ -439,14 +448,20 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
         
         NSNumber *presentationLayerEndAngle = [[obj presentationLayer] valueForKey:@"endAngle"];
         CGFloat interpolatedEndAngle = [presentationLayerEndAngle doubleValue];
+        CGFloat interpolatedMidAngle = (interpolatedEndAngle + interpolatedStartAngle) / 2;
 
-        CGPathRef path = CGPathCreateArc(_pieCenter, _pieRadius, interpolatedStartAngle, interpolatedEndAngle);
+        CGPoint center = _pieCenter;
+        if ([obj isKindOfClass:[SliceLayer class]]) {
+            SliceLayer *sliceLayer = (SliceLayer *) obj;
+            center = CGPointMake(_pieCenter.x + (_sliceOffsetRadius * cos(sliceLayer.midAngle)), +_pieCenter.y + (_sliceOffsetRadius * sin(sliceLayer.midAngle)));
+        }
+
+        CGPathRef path = CGPathCreateArc(center, _pieRadius, interpolatedStartAngle, interpolatedEndAngle);
         [obj setPath:path];
         CFRelease(path);
         
         {
             CALayer *labelLayer = [[obj sublayers] objectAtIndex:0];
-            CGFloat interpolatedMidAngle = (interpolatedEndAngle + interpolatedStartAngle) / 2;        
             [CATransaction setDisableActions:YES];
             [labelLayer setPosition:CGPointMake(_pieCenter.x + (_labelRadius * cos(interpolatedMidAngle)), _pieCenter.y + (_labelRadius * sin(interpolatedMidAngle)))];
             [CATransaction setDisableActions:NO];
@@ -605,6 +620,7 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
         return;
     SliceLayer *layer = [_pieView.layer.sublayers objectAtIndex:index];
     if (layer && layer.isSelected) {
+        CGFloat midAngle = layer.midAngle;
         layer.position = CGPointMake(0, 0);
         layer.isSelected = NO;
     }
