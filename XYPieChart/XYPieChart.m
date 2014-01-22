@@ -453,7 +453,7 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
         CGPoint center = _pieCenter;
         if ([obj isKindOfClass:[SliceLayer class]]) {
             SliceLayer *sliceLayer = (SliceLayer *) obj;
-            center = CGPointMake(_pieCenter.x + (_sliceOffsetRadius * cos(sliceLayer.midAngle) * sliceLayer.percentage), +_pieCenter.y + (_sliceOffsetRadius * sin(sliceLayer.midAngle) * sliceLayer.percentage));
+            center = CGPointMake(_pieCenter.x + (_sliceOffsetRadius * cos(sliceLayer.midAngle)), +_pieCenter.y + (_sliceOffsetRadius * sin(sliceLayer.midAngle)));
         }
 
         CGPathRef path = CGPathCreateArc(center, _pieRadius, interpolatedStartAngle, interpolatedEndAngle);
