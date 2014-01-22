@@ -379,7 +379,7 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
             {
                 color = [UIColor colorWithHue:((index/8)%20)/20.0+0.02 saturation:(index%8+3)/10.0 brightness:91/100.0 alpha:1];
             }
-            
+
             [layer setFillColor:color.CGColor];
             if([_dataSource respondsToSelector:@selector(pieChart:textForSliceAtIndex:)])
             {
@@ -494,14 +494,16 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
         CGPathRef path = [pieLayer path];
         
         if (CGPathContainsPoint(path, &transform, point, 0)) {
-            [pieLayer setLineWidth:_selectedSliceStroke];
-            [pieLayer setStrokeColor:[UIColor whiteColor].CGColor];
+            [pieLayer setLineWidth:_selectedSliceStroke + _gapWidth / 2.0];
+            [pieLayer setStrokeColor:_gapColor.CGColor];
             [pieLayer setLineJoin:kCALineJoinBevel];
             [pieLayer setZPosition:MAXFLOAT];
             selectedIndex = idx;
         } else {
+            [pieLayer setLineJoin:kCALineJoinBevel];
             [pieLayer setZPosition:kDefaultSliceZOrder];
-            [pieLayer setLineWidth:0.0];
+            [pieLayer setStrokeColor:_gapColor.CGColor];
+            [pieLayer setLineWidth:_gapWidth / 2.0];
         }
     }];
     return selectedIndex;
@@ -535,7 +537,8 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
     
     for (SliceLayer *pieLayer in pieLayers) {
         [pieLayer setZPosition:kDefaultSliceZOrder];
-        [pieLayer setLineWidth:0.0];
+        [pieLayer setStrokeColor:_gapColor.CGColor];
+        [pieLayer setLineWidth:_gapWidth / 2.0];
     }
 }
 
@@ -616,7 +619,8 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
 {
     SliceLayer *pieLayer = [SliceLayer layer];
     [pieLayer setZPosition:0];
-    [pieLayer setStrokeColor:NULL];
+    [pieLayer setStrokeColor:self.gapColor.CGColor];
+    [pieLayer setLineWidth:self.gapWidth / 2.0];
     CATextLayer *textLayer = [CATextLayer layer];
     textLayer.contentsScale = [[UIScreen mainScreen] scale];
     CGFontRef font = nil;
